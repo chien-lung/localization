@@ -6,11 +6,36 @@ class KalmanFilter:
         self.Q = Q
     
     def predict(self, mu, Sigma, u, A, B):
+        """Prediction step of KF
+
+        Args:
+            mu (np.array): previous state (also a mean). Shape is (3,1)
+            Sigma (np.array): covariance matrix. Shape is (3,3)
+            u (np.array): control. Shape is (2,1)
+            A (np.array): transition matrix of state. Shape is (3,3)
+            B (np.array): transition matrix of control. Shape is (3,2)
+
+        Returns:
+            np.array: current coarse state. Shape is (3,1)
+            np.array: current coarse covariance. Shape is (3,3)
+        """
         mu_next = A @ mu + B @ u
         Sigma_next = A @ Sigma @ A.T + self.R
         return mu_next, Sigma_next
 
     def update(self, mu, Sigma, z, C):
+        """Correction step of KF
+
+        Args:
+            mu (np.array): state (also a mean). Shape is (3,1)
+            Sigma (np.array): covariance matrix. Shape is (3,3)
+            z (np.array): measurement. Shape is (2,1)
+            C (np.array): sensor matrix. Shape is (2,3)
+
+        Returns:
+            np.array: current fine state. Shape is (3,1)
+            np.array: current fine covariance. Shape is (3,3)
+        """
         I = np.identity(Sigma.shape[0])
         K = Sigma @ C.T @ np.linalg.inv(C @ Sigma @ C.T + self.Q)
         mu_next = mu + K @ (z - C @ mu)
@@ -18,6 +43,21 @@ class KalmanFilter:
         return mu_next, Sigma_next
 
     def filter(self, mu, Sigma, z, u, A, B, C):
+        """Filter the previous to the current state
+
+        Args:
+            mu (np.array): previous state (also a mean). Shape is (3,1)
+            Sigma (np.array): covariance matrix. Shape is (3,3)
+            z (np.array): measurement. Shape is (2,1)
+            u (np.array): control. Shape is (2,1)
+            A (np.array): transition matrix of state. Shape is (3,3)
+            B (np.array): transition matrix of control. Shape is (3,2)
+            C (np.array): sensor matrix. Shape is (2,3)
+
+        Returns:
+            np.array: current fine state. Shape is (3,1)
+            np.array: current fine covariance. Shape is (3,3)
+        """
         mu, Sigma = self.predict(mu, Sigma, u, A, B)
         mu, Sigma = self.update(mu, Sigma, z, C)
         return mu, Sigma
@@ -32,7 +72,7 @@ if __name__ == "__main__":
         data = pickle.load(f)
     print(data.keys())
     path = data["path"]
-    control = data["control"]
+    controls = data["control"]
     N = path.shape[0]
     # measurements = data["measurement"]
     x0 = path[0].reshape(3,1)
@@ -40,9 +80,7 @@ if __name__ == "__main__":
     measurements = z0.T
 
     mu = path[0]
-    Sigma = np.matrix([[1,0,0],
-                       [0,1,0],
-                       [0,0,1]])
+    Sigma = np.eye(3)
     R = np.matrix([[3e-3, 1e-3, 0],
                    [1e-3, 3e-3, 0],
                    [0, 0, 1e-4]])
@@ -59,9 +97,9 @@ if __name__ == "__main__":
                       [0, 1]])
         C = np.array([[1,0,0],
                       [0,1,0]])
-        u = control[i].reshape(2,1)
+        u = controls[i].reshape(2,1)
         # z = measurements[i].reshape(2,1)
-        z = measure(x_true, C, distribution="gaussian")
+        z = measure(x_true, C, distribution="triangular")
         measurements = np.vstack((measurements, z.T))
         mu, Sigma = kf.filter(mu, Sigma, z, u, A, B, C)
         path_est.append(mu)

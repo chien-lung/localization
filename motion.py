@@ -35,8 +35,8 @@ def main():
     # Generate noise
     mu = np.zeros(path.shape[1])
     R = np.matrix([[3e-3, 1e-3, 0],
-                     [1e-3, 3e-3, 0],
-                     [0, 0, 1e-4]])
+                   [1e-3, 3e-3, 0],
+                   [0, 0, 1e-4]])
     noises = calc_noise(path, mu, R)
     data_dict["motion_noise"] = noises
 
