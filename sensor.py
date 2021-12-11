@@ -12,7 +12,7 @@ def calc_noise(distribution):
         ratio = 0.9
         loc = -0.2
         scale = 0.25
-        noise = binom.rvs(ratio, loc, scale, size=(2,1))
+        noise = triang.rvs(ratio, loc, scale, size=(2,1))
     elif distribution == "binomial":
         ratio = 0.9
         loc = -0.2
