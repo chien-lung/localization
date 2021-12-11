@@ -1,8 +1,6 @@
 import numpy as np
-
 from scipy.stats import triang
 from scipy.stats import binom
-
 from scipy.stats import triang, rayleigh
 
 
@@ -19,35 +17,31 @@ def calc_noise(distribution):
         noise = triang.rvs(ratio, loc, scale, size=(2,1))
 
     elif distribution == "binomial":
-        ratio = 0.9
-        loc = -0.2
-        scale = 0.25
-        noise = binom.rvs(ratio, loc, scale, size=(2,1))
+        
+        noise = binom.rvs(1, 0.1 , 0, size=(2,1))
     elif distribution == "poisson":
-        ratio = 0.9
-        loc = -0.2
-        scale = 0.25
-        noise = np.random.poisson(ratio, loc, scale, size=(2,1))
+       
+        noise = np.random.poisson(0.1, size=(2,1))
     elif distribution == "bernoulli":
         ratio = 0.9
         loc = -0.2
         scale = 0.25
-        noise = np.random.vinomial(ratio, loc, scale, size=(2,1))
+        noise = np.random.binomial(1, 0.2, size=(2,1))
 
     elif distribution == "rayleigh":
         loc = -0.2
         scale = 0.25
-        noise = rayleigh.rvs(loc, scale, size=(2,1))
+        noise = rayleigh.rvs(0.2, 0.2, size=(2,1))
 
     else:
         noise = np.zeros((2,1))
     return noise
 
-def measure(x, C, distribution="gaussian"):
+def measure(x, C, distribution="rayleigh"):
     z = C @ x + calc_noise(distribution)
     return z
 
-def get_measurements(path, distribution="gaussian"):
+def get_measurements(path, distribution="rayleigh"):
     print("Sensor noise type: ", distribution)
     C = np.matrix([[1,0,0],
                    [0,1,0]])
@@ -69,7 +63,7 @@ def main():
     path_ideal = data_dict["path_ideal"]
 
     # Generate measurements
-    measurements = get_measurements(path, distribution="gaussian")
+    measurements = get_measurements(path, distribution="rayleigh")
     data_dict["measurement"] = measurements
 
     # Draw ideal path, noisy path, measurements

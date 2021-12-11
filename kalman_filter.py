@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # Load data
     with open("data.pickle", "rb") as f:
         data = pickle.load(f)
-    print(data.keys())
+    # print(data.keys())
     path = data["path"]
     controls = data["control"]
     N = path.shape[0]
@@ -99,7 +99,7 @@ if __name__ == "__main__":
                       [0,1,0]])
         u = controls[i].reshape(2,1)
         # z = measurements[i].reshape(2,1)
-        z = measure(x_true, C, distribution="triangular")
+        z = measure(x_true, C, distribution="rayleigh")
         measurements = np.vstack((measurements, z.T))
         mu, Sigma = kf.filter(mu, Sigma, z, u, A, B, C)
         path_est.append(mu)
