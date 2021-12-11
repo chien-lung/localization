@@ -30,6 +30,7 @@ if __name__ == "__main__":
     # Load data
     with open("data.pickle", "rb") as f:
         data = pickle.load(f)
+    print(data.keys())
     path = data["path"]
     control = data["control"]
     N = path.shape[0]

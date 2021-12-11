@@ -28,7 +28,7 @@ def main():
     import pickle
     import matplotlib.pyplot as plt
     # Load path
-    with open("data.pickle", "rb") as f:
+    with open("data_path.pickle", "rb") as f:
         data_dict = pickle.load(f)
     path = data_dict["path"]
 
@@ -77,7 +77,7 @@ def main():
     # Save noise, control, ideal path
     save = input("Enter y to save: ")
     if save == "y":
-        with open("data.pickle", "wb") as f:
+        with open("data_path.pickle", "wb") as f:
             pickle.dump(data_dict, f)
         print("Data is saved")
 
