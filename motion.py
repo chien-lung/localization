@@ -28,15 +28,15 @@ def main():
     import pickle
     import matplotlib.pyplot as plt
     # Load path
-    with open("data.pickle", "rb") as f:
+    with open("data_path.pickle", "rb") as f:
         data_dict = pickle.load(f)
     path = data_dict["path"]
 
     # Generate noise
     mu = np.zeros(path.shape[1])
     R = np.matrix([[3e-3, 1e-3, 0],
-                     [1e-3, 3e-3, 0],
-                     [0, 0, 1e-4]])
+                   [1e-3, 3e-3, 0],
+                   [0, 0, 1e-4]])
     noises = calc_noise(path, mu, R)
     data_dict["motion_noise"] = noises
 
