@@ -87,13 +87,14 @@ def main(screenshot=False):
     ######### Particle Filter ##########
     start_time = time.time()
     num_particles = 100
+    pf_sensor_noise_type = "gaussian"
     z0 = measurements[0]
     R = np.matrix([[1e-2, 1e-4, 0],
                    [1e-4, 1e-2, 0],
                    [0, 0, 0]])
     Q = np.matrix([[8e-2, 1e-3],
                    [1e-3, 8e-2]])
-    pf = ParticleFilter(num_particles, z0.reshape(2), R=R, Q=Q, sensor_noise_type="gaussian")
+    pf = ParticleFilter(num_particles, z0.reshape(2), R=R, Q=Q, sensor_noise_type=pf_sensor_noise_type)
 
     error_pf = 0
     path_pf = []
@@ -115,7 +116,7 @@ def main(screenshot=False):
    
     # Draw each path 
     draw_path(path_kf, color=(0,0,255))
-    draw_path(path_pf, color=(0,255,0))
+    draw_path(path_pf, color=(255,0,0))
     draw_path(path_gt)
 
     # Show execution time
@@ -130,6 +131,15 @@ def main(screenshot=False):
     
     # Execute planned path
     execute_trajectory(robots['pr2'], base_joints, path_gt, sleep=0.05)
+
+    # Check collision
+    for node in path_kf:
+        if collision_fn(node):
+            draw_sphere_marker((node[0], node[1], 1.5), 0.05, (0, 0, 1, 1))
+    for node in path_pf:
+        if collision_fn(node):
+            draw_sphere_marker((node[0], node[1], 1.2), 0.05, (1, 0, 0, 1))
+    
     # Keep graphics window opened
     wait_if_gui()
     disconnect()

@@ -25,7 +25,6 @@ def measure(x, C, distribution="gaussian"):
     return z
 
 def get_measurements(path, distribution="gaussian"):
-    print("Sensor noise type: ", distribution)
     C = np.matrix([[1,0,0],
                    [0,1,0]])
     measurements = np.zeros((0, 2))
@@ -46,7 +45,9 @@ def main():
     path_ideal = data_dict["path_ideal"]
 
     # Generate measurements
-    measurements = get_measurements(path, distribution="gaussian")
+    sensor_noise_distribution = "gaussian"
+    print("Sensor noise type: ", sensor_noise_distribution)
+    measurements = get_measurements(path, distribution=sensor_noise_distribution)
     data_dict["measurement"] = measurements
 
     # Draw ideal path, noisy path, measurements

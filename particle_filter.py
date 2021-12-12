@@ -138,20 +138,21 @@ if __name__ == "__main__":
     path = data["path"]
     controls = data["control"]
     N = path.shape[0]
-    # measurements = data["measurement"]
+    measurements = data["measurement"]
     
     # Iniliazite particle filters
     num_particles = 100
-    # z0 = measurements[0]
-    x0 = path[0].reshape(3,1)
-    z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
-    measurements = z0.T
-    R = np.matrix([[3e-3, 1e-3, 0],
-                   [1e-3, 3e-3, 0],
-                   [0, 0, 1e-4]])
-    Q = np.matrix([[3e-2, 4e-3],
-                   [4e-3, 3e-2]])
-    pf = ParticleFilter(num_particles, z0.reshape(2), R=R, Q=Q, sensor_noise_type="triangular")
+    pf_sensor_noise_type = "gaussian"
+    z0 = measurements[0]
+    # x0 = path[0].reshape(3,1)
+    # z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
+    # measurements = z0.T
+    R = np.matrix([[1e-2, 1e-4, 0],
+                   [1e-4, 1e-2, 0],
+                   [0, 0, 0]])
+    Q = np.matrix([[8e-2, 1e-3],
+                   [1e-3, 8e-2]])
+    pf = ParticleFilter(num_particles, z0.reshape(2), R=R, Q=Q, sensor_noise_type=pf_sensor_noise_type)
 
     path_est = []
     for i in range(1, N):
@@ -163,9 +164,9 @@ if __name__ == "__main__":
         C = np.array([[1,0,0],
                       [0,1,0]])
         u = controls[i].reshape(2,1)
-        # z = measurements[i].reshape(2,1)
-        z = measure(x_true, C, distribution="triangular")
-        measurements = np.vstack((measurements, z.T))
+        z = measurements[i].reshape(2,1)
+        # z = measure(x_true, C, distribution=pf_sensor_noise_type)
+        # measurements = np.vstack((measurements, z.T))
         x = pf.filter(z, u, A, B, C)
         path_est.append(x)
 
@@ -178,8 +179,8 @@ if __name__ == "__main__":
     path_y = path[:, 1]
     meas_x = measurements[:, 0]
     meas_y = measurements[:, 1]
-    plt.plot(path_x, path_y, color="b", label="Noisy path")
-    plt.plot(path_est_x, path_est_y, color="r", label="PF path")
+    plt.plot(path_x, path_y, color="black", label="Path")
+    plt.plot(path_est_x, path_est_y, color="red", label="PF path")
     plt.scatter(meas_x, meas_y, label="Measurements")
     plt.legend()
     plt.show()
