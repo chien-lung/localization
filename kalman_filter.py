@@ -1,7 +1,9 @@
 import numpy as np
 
 class KalmanFilter:
-    def __init__(self, R, Q) -> None:
+    def __init__(self, R, Q, update_times=1) -> None:
+        self.index = 0
+        self.update_times = update_times
         self.R = R
         self.Q = Q
     
@@ -58,8 +60,11 @@ class KalmanFilter:
             np.array: current fine state. Shape is (3,1)
             np.array: current fine covariance. Shape is (3,3)
         """
+        self.index += 1
         mu, Sigma = self.predict(mu, Sigma, u, A, B)
-        mu, Sigma = self.update(mu, Sigma, z, C)
+        if self.index % self.update_times == 0:
+            mu, Sigma = self.update(mu, Sigma, z, C)
+            self.index = 0
         return mu, Sigma
 
 if __name__ == "__main__":
@@ -73,18 +78,18 @@ if __name__ == "__main__":
     path = data["path"]
     controls = data["control"]
     N = path.shape[0]
-    # measurements = data["measurement"]
-    x0 = path[0].reshape(3,1)
-    z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
-    measurements = z0.T
+    measurements = data["measurement"]
+    # x0 = path[0].reshape(3,1)
+    # z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
+    # measurements = z0.T
 
-    mu = path[0]
+    mu = path[0].reshape(3,1)
     Sigma = np.eye(3)
-    R = np.matrix([[3e-3, 1e-3, 0],
-                   [1e-3, 3e-3, 0],
-                   [0, 0, 1e-4]])
-    Q = np.matrix([[3e-2, 4e-3],
-                   [4e-3, 3e-2]])
+    R = np.matrix([[1e-2, 1e-4, 0],
+                   [1e-4, 1e-2, 0],
+                   [0, 0, 0]])
+    Q = np.matrix([[8e-2, 1e-3],
+                   [1e-3, 8e-2]])
     kf = KalmanFilter(R, Q)
 
     path_est = []
@@ -97,9 +102,9 @@ if __name__ == "__main__":
         C = np.array([[1,0,0],
                       [0,1,0]])
         u = controls[i].reshape(2,1)
-        # z = measurements[i].reshape(2,1)
-        z = measure(x_true, C, distribution="triangular")
-        measurements = np.vstack((measurements, z.T))
+        z = measurements[i].reshape(2,1)
+        # z = measure(x_true, C, distribution="triangular")
+        # measurements = np.vstack((measurements, z.T))
         mu, Sigma = kf.filter(mu, Sigma, z, u, A, B, C)
         path_est.append(mu)
     
@@ -112,8 +117,8 @@ if __name__ == "__main__":
     path_y = path[:, 1]
     meas_x = measurements[:, 0]
     meas_y = measurements[:, 1]
-    plt.plot(path_x, path_y, color="b", label="Noisy path")
-    plt.plot(path_est_x, path_est_y, color="r", label="KF path")
+    plt.plot(path_x, path_y, color="black", label="Path")
+    plt.plot(path_est_x, path_est_y, color="blue", label="KF path")
     plt.scatter(meas_x, meas_y, label="Measurements")
     plt.legend()
     plt.show()
