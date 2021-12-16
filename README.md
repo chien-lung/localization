@@ -17,6 +17,7 @@ $ bash install.sh
 
 ## Generate the data
 We assume we already has a path which includes motion noise (i.e., `data_path.pickle`). This path is a N by 3 matrix, which each row represents a state.
+
 ![path](images/path.png)
 
 ### Control and motion noise generation
@@ -24,6 +25,7 @@ We obtain the control at each time step by generaing the motion noise and solvin
 ```
 $ python motion.py
 ```
+
 ![ideal_path](images/ideal_path.png)
 
 ### Measurement generation
@@ -31,6 +33,7 @@ To fairly compare algorithms with the same measurements, we obtain the measureme
 ```
 $ python sensor.py
 ```
+
 ![measurements](images/measurements.png)
 
 ## Run KF and PF
@@ -44,6 +47,7 @@ $ python kalman_filter.py
 Execution time:  0.010622262954711914
 Error:  20.401129962175126
 ```
+
 ![kf](images/kf_tri.png)
 
 ### Particle Filter
@@ -54,6 +58,7 @@ $ python particle_filter.py
 Execution time:  4.653516054153442
 Error:  7.694496798550877
 ```
+
 ![pf](images/pf_tri.png)
 
 
@@ -68,6 +73,7 @@ Error:
 KF:  20.062203182620284
 PF:  7.642154967053671
 ```
+
 ![pr2](images/pr2_tri.png)
 
 # Contact
