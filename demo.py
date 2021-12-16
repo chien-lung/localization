@@ -28,7 +28,6 @@ def config_to_state(config):
 def state_to_config(state):
     return tuple(np.array(state).reshape(3))
 
-
 def main(screenshot=False):
     # initialize PyBullet
     connect(use_gui=True)
@@ -37,16 +36,8 @@ def main(screenshot=False):
 
     # define active DoFs
     base_joints = [joint_from_name(robots['pr2'], name) for name in PR2_GROUPS['base']]
-
     collision_fn = get_collision_fn_PR2(robots['pr2'], base_joints, list(obstacles.values()))
-    # Example use of collision checking
-    # print("Robot colliding? ", collision_fn((0.5, -1.3, -np.pi/2)))
-    # Example of draw 
-    # draw_sphere_marker((0, 0, 1), 0.1, (1, 0, 0, 1))
-    
-    start_config = tuple(get_joint_positions(robots['pr2'], base_joints))
-    path_gt = []
-    
+
     # System dynamics
     A = np.eye(3)
     C = np.array([[1,0,0],
@@ -87,7 +78,7 @@ def main(screenshot=False):
     ######### Particle Filter ##########
     start_time = time.time()
     num_particles = 100
-    pf_sensor_noise_type = "gaussian"
+    pf_sensor_noise_type = "triangular"
     z0 = measurements[0]
     R = np.matrix([[1e-2, 1e-4, 0],
                    [1e-4, 1e-2, 0],

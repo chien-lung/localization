@@ -15,7 +15,7 @@ class ParticleFilter:
             self.Q = Q
 
     def initialize_particles(self, init_measurement, distribution, init_range=(-0.1,0.1)):
-        """Initilize particles around the first measurements
+        """Initialize particles around the first measurements
 
         Args:
             init_measurement (np.array): the measurement of the initial state. Shape is (2,)
@@ -29,17 +29,13 @@ class ParticleFilter:
         particles = np.zeros((self.N, 3)) + init_state
         if distribution == "uniform":
             low, high = init_range
-            noise_x = np.random.uniform(low, high, self.N)
-            noise_y = np.random.uniform(low, high, self.N)
-            particles[:, 0] = noise_x + particles[:, 0]
-            particles[:, 1] = noise_y + particles[:, 1]
+            particles[:, 0] += np.random.uniform(low, high, self.N)
+            particles[:, 1] += np.random.uniform(low, high, self.N)
         elif distribution == "gaussian":
             mu = 0
             sigma = (abs(init_range[0])+abs(init_range[1]))/2
-            noise_x = np.random.uniform(mu, sigma, self.N)
-            noise_y = np.random.uniform(mu, sigma, self.N)
-            particles[:, 0] = noise_x + particles[:, 0]
-            particles[:, 1] = noise_y + particles[:, 1]
+            particles[:, 0] += np.random.normal(mu, sigma, self.N)
+            particles[:, 1] += np.random.normal(mu, sigma, self.N)
         return particles
     
     def calc_motion_noise(self):
@@ -56,10 +52,10 @@ class ParticleFilter:
         """Get the probability with the given x according to the sensor_noise_type
 
         Args:
-            x (np.array): Sensor noise. Shape is (3,1)
+            x (np.array): Sensor noise. Shape is (2,1)
 
         Returns:
-            float: probability
+            float: probability (i.e., weight changed)
         """
         p = 1
         if self.sensor_noise_type == "gaussian":
@@ -70,9 +66,11 @@ class ParticleFilter:
             scale = 0.25
             p = np.prod(triang.pdf(x, ratio, loc, scale) + 1e-4)
         elif self.sensor_noise_type == "rayleigh":
-            loc = -0.2
-            scale = 0.25
+            loc = -0.5
+            scale = 0.55
             p = np.prod(rayleigh.pdf(x, loc, scale) + 1e-4)
+        else:
+            print("Undefined sensor noise type.")
         return p
 
     def filter(self, z, u, A, B, C):
@@ -95,8 +93,8 @@ class ParticleFilter:
             p = A @ p + B @ u + self.calc_motion_noise()
             z_p = C @ p
             # Importance weight
-            diff = z - z_p
-            w *= self.sensing_pdf(diff)
+            noise = z - z_p
+            w *= self.sensing_pdf(noise)
             # Update the particle and weight
             self.particles[i:i+1] = p.T
             self.weight[i] = w
@@ -128,6 +126,7 @@ class ParticleFilter:
         self.weight = np.ones(self.weight.shape)/self.N
 
 if __name__ == "__main__":
+    import time
     import pickle
     import matplotlib.pyplot as plt
     from sensor import measure
@@ -138,12 +137,14 @@ if __name__ == "__main__":
     path = data["path"]
     controls = data["control"]
     N = path.shape[0]
+    # Uncomment to use saved measurements
     measurements = data["measurement"]
-    
-    # Iniliazite particle filters
-    num_particles = 100
-    pf_sensor_noise_type = "gaussian"
     z0 = measurements[0]
+    
+    # Iniliazite Particle Filter
+    num_particles = 100
+    pf_sensor_noise_type = "triangular"
+    # Uncomment to measure at each time
     # x0 = path[0].reshape(3,1)
     # z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
     # measurements = z0.T
@@ -154,6 +155,8 @@ if __name__ == "__main__":
                    [1e-3, 8e-2]])
     pf = ParticleFilter(num_particles, z0.reshape(2), R=R, Q=Q, sensor_noise_type=pf_sensor_noise_type)
 
+    # Execute PF along the path
+    start_time = time.time()
     path_est = []
     for i in range(1, N):
         x_true = path[i].reshape(3,1)
@@ -164,11 +167,14 @@ if __name__ == "__main__":
         C = np.array([[1,0,0],
                       [0,1,0]])
         u = controls[i].reshape(2,1)
+        # Uncomment to use saved measurements
         z = measurements[i].reshape(2,1)
+        # Uncomment to measure at each time
         # z = measure(x_true, C, distribution=pf_sensor_noise_type)
         # measurements = np.vstack((measurements, z.T))
         x = pf.filter(z, u, A, B, C)
         path_est.append(x)
+    exec_time = time.time() - start_time
 
     # Exclude the first state
     path = path[1:]
@@ -185,6 +191,10 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+    # Execution time
+    print("Execution time: ", exec_time)
+
+    # Compute error
     diff_x = path_est_x-path_x
     diff_y = path_est_y-path_y
     error = np.sum(np.sqrt(np.square(diff_x)+np.square(diff_y)))

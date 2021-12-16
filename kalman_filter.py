@@ -12,14 +12,14 @@ class KalmanFilter:
 
         Args:
             mu (np.array): previous state (also a mean). Shape is (3,1)
-            Sigma (np.array): covariance matrix. Shape is (3,3)
+            Sigma (np.array): covariance of the state. Shape is (3,3)
             u (np.array): control. Shape is (2,1)
             A (np.array): transition matrix of state. Shape is (3,3)
             B (np.array): transition matrix of control. Shape is (3,2)
 
         Returns:
-            np.array: current coarse state. Shape is (3,1)
-            np.array: current coarse covariance. Shape is (3,3)
+            np.array: predicted state. Shape is (3,1)
+            np.array: predicted covariance. Shape is (3,3)
         """
         mu_next = A @ mu + B @ u
         Sigma_next = A @ Sigma @ A.T + self.R
@@ -30,13 +30,13 @@ class KalmanFilter:
 
         Args:
             mu (np.array): state (also a mean). Shape is (3,1)
-            Sigma (np.array): covariance matrix. Shape is (3,3)
+            Sigma (np.array): covariance of the state. Shape is (3,3)
             z (np.array): measurement. Shape is (2,1)
             C (np.array): sensor matrix. Shape is (2,3)
 
         Returns:
-            np.array: current fine state. Shape is (3,1)
-            np.array: current fine covariance. Shape is (3,3)
+            np.array: updated state. Shape is (3,1)
+            np.array: updated covariance. Shape is (3,3)
         """
         I = np.identity(Sigma.shape[0])
         K = Sigma @ C.T @ np.linalg.inv(C @ Sigma @ C.T + self.Q)
@@ -48,8 +48,8 @@ class KalmanFilter:
         """Filter the previous to the current state
 
         Args:
-            mu (np.array): previous state (also a mean). Shape is (3,1)
-            Sigma (np.array): covariance matrix. Shape is (3,3)
+            mu (np.array): state (also a mean). Shape is (3,1)
+            Sigma (np.array): covariance of the state. Shape is (3,3)
             z (np.array): measurement. Shape is (2,1)
             u (np.array): control. Shape is (2,1)
             A (np.array): transition matrix of state. Shape is (3,3)
@@ -57,8 +57,8 @@ class KalmanFilter:
             C (np.array): sensor matrix. Shape is (2,3)
 
         Returns:
-            np.array: current fine state. Shape is (3,1)
-            np.array: current fine covariance. Shape is (3,3)
+            np.array: updated state. Shape is (3,1)
+            np.array: updated covariance. Shape is (3,3)
         """
         self.index += 1
         mu, Sigma = self.predict(mu, Sigma, u, A, B)
@@ -68,6 +68,7 @@ class KalmanFilter:
         return mu, Sigma
 
 if __name__ == "__main__":
+    import time
     import pickle
     import matplotlib.pyplot as plt
     from sensor import measure
@@ -78,11 +79,14 @@ if __name__ == "__main__":
     path = data["path"]
     controls = data["control"]
     N = path.shape[0]
+    # Uncomment to use saved measurements
     measurements = data["measurement"]
+    # Uncomment to measure at each time
     # x0 = path[0].reshape(3,1)
     # z0 = measure(x0, np.array([[1,0,0],[0,1,0]]))
     # measurements = z0.T
 
+    # Iniliazite Kalman Filter
     mu = path[0].reshape(3,1)
     Sigma = np.eye(3)
     R = np.matrix([[1e-2, 1e-4, 0],
@@ -92,6 +96,8 @@ if __name__ == "__main__":
                    [1e-3, 8e-2]])
     kf = KalmanFilter(R, Q)
 
+    # Execute KF along the path
+    start_time = time.time()
     path_est = []
     for i in range(1, N):
         x_true = path[i].reshape(3,1)
@@ -102,11 +108,14 @@ if __name__ == "__main__":
         C = np.array([[1,0,0],
                       [0,1,0]])
         u = controls[i].reshape(2,1)
+        # Uncomment to use saved measurements
         z = measurements[i].reshape(2,1)
+        # Uncomment to measure at each time
         # z = measure(x_true, C, distribution="triangular")
         # measurements = np.vstack((measurements, z.T))
         mu, Sigma = kf.filter(mu, Sigma, z, u, A, B, C)
         path_est.append(mu)
+    exec_time = time.time() - start_time
     
     # Exclude the first state
     path = path[1:]
@@ -123,6 +132,10 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+    # Execution time
+    print("Execution time: ", exec_time)
+    
+    # Compute error
     diff_x = path_est_x-path_x
     diff_y = path_est_y-path_y
     error = np.sum(np.sqrt(np.square(diff_x)+np.square(diff_y)))
