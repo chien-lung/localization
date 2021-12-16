@@ -37,6 +37,6 @@ if __name__ == "__main__":
     plt.plot(x, rayleigh.pdf(x, loc, scale), "r-", lw=5, alpha=0.8,label="Rayleigh pdf")
     plt.hist(r, color="blue", density=True, alpha=0.3, label="Sampled noises")
     plt.axvline(1*scale+loc, color="black",label="Mode")
-    plt.title("Rayleigh: loc=-0.2, scale=0.25")
+    plt.title("Rayleigh: loc=-0.5, scale=0.55")
     plt.legend()
     plt.show()
