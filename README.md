@@ -1,16 +1,17 @@
 # Localization
-Implement Kalman Filter and Particle Filter to localize the PR2 robot with the given path.
-
-
-# About the project
 EECS 498 Algorithmic Robotics - Full 2021
 
 Prof. Dmitry Berenson
+
+Implement Kalman Filter (KF) and Particle Filter (PF) to localize the PR2 robot with the given path.
+To realize more details, please read our [final project report](final_project.pdf).
+
 
 # Getting started
 
 ## Install necessary packages
 We use the following packages in this project: `numpy`, `scipy`, `pybullet`, and `matplotlib`. 
+
 ```
 $ bash install.sh
 ```
@@ -37,10 +38,9 @@ $ python sensor.py
 ![measurements](images/measurements.png)
 
 ## Run KF and PF
-
 After having controls, measurements, and the path, we can start to run the filtering algorithms.
-### Kalman Filter
 
+### Kalman Filter
 By running this command, you will see a figure containing the estimated path (blue) and the real path (black).
 ```
 $ python kalman_filter.py
@@ -51,7 +51,6 @@ Error:  20.401129962175126
 ![kf](images/kf_tri.png)
 
 ### Particle Filter
-
 By running this command, you will see a figure containing the estimated path (red) and the real path (black).
 ```
 $ python particle_filter.py 
@@ -60,7 +59,6 @@ Error:  7.694496798550877
 ```
 
 ![pf](images/pf_tri.png)
-
 
 ## Compare KF and PF
 Besides plotting the path on the xy-plane, we can also simulate the PR2 robot in the given enviroment.
@@ -76,8 +74,38 @@ PF:  7.642154967053671
 
 ![pr2](images/pr2_tri.png)
 
-# Contact
+# Visualization
+## Noise distribution
+To visualize different noises we choose, we plot their distribution to realize whether this distribution is suitable for our implementation. 
 
+```
+$ python plot_distribution.py
+```
+
+![dist](images/distribution.png)
+
+## Comparison
+In addition to the comparison between KF and PF, we also want to compare the filtering algorithm with different parameters.
+
+### Number of particles used in PF
+We demonstrate the tradeoff between execution time and error for PF using different number of particles.
+
+```
+$ python compare_num_of_particles.py
+```
+
+![comp1](images/comp_num_of_particles.png)
+
+### Update frequency of KF
+We demonstrate the tradeoff between execution time and error for KF with different update frequency.
+
+```
+$ python compare_update_freq.py
+```
+
+![comp2](images/comp_update_freq.png)
+
+# Contact
 Chien-Lung Chou ([lungchou@umich.edu](lungchou@umich.edu))
 
 Wan-Yi Yu ([wendyu@umich.edu](wendyu@umich.edu))
