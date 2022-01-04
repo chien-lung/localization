@@ -4,7 +4,7 @@ EECS 498 Algorithmic Robotics - Full 2021
 Prof. Dmitry Berenson
 
 Implement Kalman Filter (KF) and Particle Filter (PF) to localize the PR2 robot with the given path.
-To realize more details, please read our [final project report](final_project.pdf).
+To realize more details, please read our [final project report](Final_Project_Report.pdf).
 
 
 # Getting started
